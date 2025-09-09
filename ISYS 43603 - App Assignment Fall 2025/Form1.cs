@@ -15,6 +15,7 @@ namespace ISYS_43603___App_Assignment_Fall_2025
         public Form1()
         {
             InitializeComponent();
+            this.Controls.Add(this.btnExit);
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -71,6 +72,10 @@ namespace ISYS_43603___App_Assignment_Fall_2025
                 txtInstID.Text = row.Cells["INST_ID"].Value?.ToString() ?? "";
                 txtInstName.Text = row.Cells["NAME"].Value?.ToString()?.Trim() ?? "";
             }
+        }
+        private void btnExit_Click(object sender, EventArgs e)
+        {
+            this.Close();
         }
 
         private void btnAddInstructor_Click(object sender, EventArgs e)

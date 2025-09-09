@@ -76,6 +76,8 @@
             base.Dispose(disposing);
         }
 
+        private System.Windows.Forms.Button btnExit;
+
         private void InitializeComponent()
         {
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
@@ -85,6 +87,7 @@
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tabControl1 = new System.Windows.Forms.TabControl();
+            this.btnExit = new System.Windows.Forms.Button();
 
             // Arkansas Razorback Colors
             System.Drawing.Color razorbackRed = System.Drawing.Color.FromArgb(157, 34, 53);      // #9D2235
@@ -501,7 +504,7 @@
             this.txtGradeLevel.BackColor = razorbackWhite;
             this.txtGradeLevel.ForeColor = razorbackBlack;
             this.txtGradeLevel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtGradeLevel.Location = new System.Drawing.Point(330, 407);
+            this.txtGradeLevel.Location = new System.Drawing.Point(350, 407);
             this.txtGradeLevel.Name = "txtGradeLevel";
             this.txtGradeLevel.Size = new System.Drawing.Size(50, 20);
             this.txtGradeLevel.TabIndex = 8;
@@ -510,7 +513,7 @@
             this.lblAge.AutoSize = true;
             this.lblAge.Font = new System.Drawing.Font("Myriad Pro", 9F, System.Drawing.FontStyle.Bold);
             this.lblAge.ForeColor = razorbackDarkGray;
-            this.lblAge.Location = new System.Drawing.Point(400, 410);
+            this.lblAge.Location = new System.Drawing.Point(420, 410);
             this.lblAge.Name = "lblAge";
             this.lblAge.Size = new System.Drawing.Size(26, 13);
             this.lblAge.TabIndex = 9;
@@ -520,7 +523,7 @@
             this.txtAge.BackColor = razorbackWhite;
             this.txtAge.ForeColor = razorbackBlack;
             this.txtAge.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtAge.Location = new System.Drawing.Point(440, 407);
+            this.txtAge.Location = new System.Drawing.Point(460, 407);
             this.txtAge.Name = "txtAge";
             this.txtAge.Size = new System.Drawing.Size(50, 20);
             this.txtAge.TabIndex = 10;
@@ -659,7 +662,7 @@
             this.cmbInstructor.Font = new System.Drawing.Font("Lato", 9F);
             this.cmbInstructor.BackColor = razorbackWhite;
             this.cmbInstructor.ForeColor = razorbackBlack;
-            this.cmbInstructor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.cmbInstructor.FlatStyle = System.Windows.Forms.FlatStyle.Standard;
             this.cmbInstructor.FormattingEnabled = true;
             this.cmbInstructor.Location = new System.Drawing.Point(320, 377);
             this.cmbInstructor.Name = "cmbInstructor";
@@ -753,7 +756,7 @@
             this.cmbReportInstructor.Font = new System.Drawing.Font("Lato", 9F);
             this.cmbReportInstructor.BackColor = razorbackWhite;
             this.cmbReportInstructor.ForeColor = razorbackBlack;
-            this.cmbReportInstructor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.cmbReportInstructor.FlatStyle = System.Windows.Forms.FlatStyle.Standard;
             this.cmbReportInstructor.FormattingEnabled = true;
             this.cmbReportInstructor.Location = new System.Drawing.Point(20, 25);
             this.cmbReportInstructor.Name = "cmbReportInstructor";
@@ -797,7 +800,7 @@
             this.cmbReportStudent.Font = new System.Drawing.Font("Lato", 9F);
             this.cmbReportStudent.BackColor = razorbackWhite;
             this.cmbReportStudent.ForeColor = razorbackBlack;
-            this.cmbReportStudent.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.cmbReportStudent.FlatStyle = System.Windows.Forms.FlatStyle.Standard;
             this.cmbReportStudent.FormattingEnabled = true;
             this.cmbReportStudent.Location = new System.Drawing.Point(20, 25);
             this.cmbReportStudent.Name = "cmbReportStudent";
@@ -841,7 +844,7 @@
             this.cmbReportClass.Font = new System.Drawing.Font("Lato", 9F);
             this.cmbReportClass.BackColor = razorbackWhite;
             this.cmbReportClass.ForeColor = razorbackBlack;
-            this.cmbReportClass.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.cmbReportClass.FlatStyle = System.Windows.Forms.FlatStyle.Standard;
             this.cmbReportClass.FormattingEnabled = true;
             this.cmbReportClass.Location = new System.Drawing.Point(20, 25);
             this.cmbReportClass.Name = "cmbReportClass";
@@ -877,13 +880,28 @@
             this.btnManageEnrollments.ForeColor = razorbackWhite;
             this.btnManageEnrollments.Font = new System.Drawing.Font("Myriad Pro", 9F, System.Drawing.FontStyle.Bold);
             this.btnManageEnrollments.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnManageEnrollments.Location = new System.Drawing.Point(350, 25);
+            this.btnManageEnrollments.Location = new System.Drawing.Point(400, 280);
             this.btnManageEnrollments.Name = "btnManageEnrollments";
             this.btnManageEnrollments.Size = new System.Drawing.Size(150, 30);
             this.btnManageEnrollments.TabIndex = 3;
             this.btnManageEnrollments.Text = "Manage Enrollments";
             this.btnManageEnrollments.UseVisualStyleBackColor = false;
             this.btnManageEnrollments.Click += new System.EventHandler(this.btnManageEnrollments_Click);
+
+            // 
+            // btnExit
+            // 
+            this.btnExit.BackColor = razorbackMediumGray;
+            this.btnExit.ForeColor = razorbackBlack;
+            this.btnExit.Font = new System.Drawing.Font("Myriad Pro", 9F, System.Drawing.FontStyle.Bold);
+            this.btnExit.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnExit.Location = new System.Drawing.Point(900, 570);
+            this.btnExit.Name = "btnExit";
+            this.btnExit.Size = new System.Drawing.Size(80, 30);
+            this.btnExit.TabIndex = 4;
+            this.btnExit.Text = "Exit";
+            this.btnExit.UseVisualStyleBackColor = false;
+            this.btnExit.Click += new System.EventHandler(this.btnExit_Click);
 
             // Finish initialization
             this.tabControl1.ResumeLayout(false);
