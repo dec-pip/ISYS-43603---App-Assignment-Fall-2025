@@ -2,11 +2,15 @@
 using System.Collections;
 using System.Data;
 using System.Data.SqlClient;
+using System.Windows.Forms;
 
 public class Walton_DB
 {
     private static SqlConnection lo_Connection;
     public const int CommandTimeOutSeconds = 1200;
+
+    // Enhanced error logging
+    public static string LastError { get; private set; } = "";
 
     public static bool OpenConnection()
     {
@@ -18,20 +22,27 @@ public class Walton_DB
                 if (lo_Connection == null)
                 {
                     lo_Connection = new SqlConnection();
-                    // Set your server, database (Catalog), UserID, and Password in the line below
-                    lo_Connection.ConnectionString = "Data Source=essql1.walton.uark.edu;Initial Catalog=ISYS43603_Fall2025_dec011_db;user id=dec011;password=ISYSPass100447686;Persist Security Info=False;";
+                    // Your database connection string
+                    lo_Connection.ConnectionString = "Data Source=essql1.walton.uark.edu;Initial Catalog=ISYS43603_Fall2025_dec011_db;user id=dec011;password=ISYSPass100447686;Persist Security Info=False;Connection Timeout=30;";
                 }
 
                 if (lo_Connection.State == ConnectionState.Closed)
                     lo_Connection.Open();
 
+                LastError = "";
                 return true;
             }
             catch (Exception ex)
             {
-                lo_Connection.Dispose();
+                LastError = ex.Message;
+                lo_Connection?.Dispose();
                 lo_Connection = null;
-                if (Retry >= 1 && (ex.Message.Contains("Data Provider error 6") || ex.Message.Contains("An existing connection was forcibly closed") || ex.Message.Contains("The specified network name is no longer available") || ex.Message.Contains("The semaphore timeout period has expired") || ex.Message.Contains("The timeout period elapsed prior to completion of the operation")))
+
+                if (Retry >= 1 && (ex.Message.Contains("Data Provider error 6") ||
+                                  ex.Message.Contains("An existing connection was forcibly closed") ||
+                                  ex.Message.Contains("The specified network name is no longer available") ||
+                                  ex.Message.Contains("The semaphore timeout period has expired") ||
+                                  ex.Message.Contains("The timeout period elapsed prior to completion of the operation")))
                 {
                     // short pause before retrying
                     System.Threading.Thread.Sleep(1337);
@@ -75,7 +86,7 @@ public class Walton_DB
 
         SqlCmd.Connection = lo_Connection;
         SqlCmd.CommandTimeout = CommandTimeOutSeconds;
-        
+
         int Retry = 2;
         while (Retry >= 0)
         {
@@ -83,10 +94,12 @@ public class Walton_DB
             {
                 SqlCmd.ExecuteNonQuery();
                 lo_Connection.Close();
+                LastError = "";
                 return true;
             }
             catch (Exception ex)
             {
+                LastError = ex.Message;
                 if (Retry >= 1 && ex.Message.Contains("deadlock victim"))
                 {
                     System.Threading.Thread.Sleep(3337);
@@ -132,10 +145,12 @@ public class Walton_DB
                 lo_Ada = null;
                 ActiveConn.Close();
                 ReturnTable = Return_DataTable;
+                LastError = "";
                 return true;
             }
             catch (Exception ex)
             {
+                LastError = ex.Message;
                 if (Retry >= 1 && ex.Message.Contains("deadlock victim"))
                 {
                     System.Threading.Thread.Sleep(3337);
@@ -186,10 +201,12 @@ public class Walton_DB
                 lo_Ada.Dispose();
                 lo_Ada = null;
                 ActiveConn.Close();
+                LastError = "";
                 return Return_DataSet;
             }
             catch (Exception ex)
             {
+                LastError = ex.Message;
                 if (Retry >= 1 && ex.Message.Contains("deadlock victim"))
                 {
                     System.Threading.Thread.Sleep(3337);
@@ -215,6 +232,259 @@ public class Walton_DB
         return CreateDataSet_ViaCmd(new SqlCommand(str_Sql), str_TableName);
     }
 
+    public static decimal RetrieveScalar(string StrSql)
+    {
+        System.Data.SqlClient.SqlCommand objCom = new System.Data.SqlClient.SqlCommand();
+        decimal ld_Result;
+
+        if (!OpenConnection())
+            return 0;
+
+        try
+        {
+            objCom.Connection = lo_Connection;
+            objCom.CommandTimeout = CommandTimeOutSeconds;
+            objCom.CommandText = StrSql;
+            ld_Result = (decimal)objCom.ExecuteScalar();
+
+            LastError = "";
+            return ld_Result;
+        }
+        catch (Exception ex)
+        {
+            LastError = ex.Message;
+            return 0;
+        }
+        finally
+        {
+            lo_Connection.Close();
+        }
+    }
+
+    public static object RetrieveSingleValue(string Sql)
+    {
+        System.Data.SqlClient.SqlCommand objCom = new System.Data.SqlClient.SqlCommand();
+        object ld_Result;
+
+        if (!OpenConnection())
+            return 0;
+
+        try
+        {
+            objCom.Connection = lo_Connection;
+            objCom.CommandTimeout = CommandTimeOutSeconds;
+            objCom.CommandText = Sql;
+            ld_Result = objCom.ExecuteScalar();
+
+            LastError = "";
+            return ld_Result;
+        }
+        catch (Exception ex)
+        {
+            LastError = ex.Message;
+            return 0;
+        }
+        finally
+        {
+            lo_Connection.Close();
+        }
+    }
+
+    public static object RetrieveSingleValue(ref SqlCommand objCom)
+    {
+        object ld_Result;
+
+        if (!OpenConnection())
+            return 0;
+
+        objCom.Connection = lo_Connection;
+        objCom.CommandTimeout = CommandTimeOutSeconds;
+
+        try
+        {
+            ld_Result = objCom.ExecuteScalar();
+
+            LastError = "";
+            return ld_Result;
+        }
+        catch (Exception ex)
+        {
+            LastError = ex.Message;
+            return 0;
+        }
+        finally
+        {
+            lo_Connection.Close();
+        }
+    }
+
+    // Enhanced utility methods for the Student Management System
+
+    /// <summary>
+    /// Tests the database connection and returns detailed connection status
+    /// </summary>
+    /// <returns>Connection status message</returns>
+    public static string TestConnection()
+    {
+        try
+        {
+            if (OpenConnection())
+            {
+                string serverVersion = "";
+                string databaseName = "";
+
+                try
+                {
+                    serverVersion = lo_Connection.ServerVersion;
+                    databaseName = lo_Connection.Database;
+                    lo_Connection.Close();
+
+                    return $"Connection successful!\nServer: {lo_Connection.DataSource}\nDatabase: {databaseName}\nServer Version: {serverVersion}";
+                }
+                catch
+                {
+                    lo_Connection.Close();
+                    return "Connection successful but unable to retrieve server details.";
+                }
+            }
+            else
+            {
+                return $"Connection failed: {LastError}";
+            }
+        }
+        catch (Exception ex)
+        {
+            return $"Connection test error: {ex.Message}";
+        }
+    }
+
+    /// <summary>
+    /// Checks if a record exists in a table with the specified condition
+    /// </summary>
+    /// <param name="tableName">Table name to check</param>
+    /// <param name="whereClause">WHERE clause condition</param>
+    /// <returns>True if record exists, false otherwise</returns>
+    public static bool RecordExists(string tableName, string whereClause)
+    {
+        try
+        {
+            string sql = $"SELECT COUNT(*) FROM {tableName} WHERE {whereClause}";
+            object result = RetrieveSingleValue(sql);
+            return Convert.ToInt32(result) > 0;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Gets the next available ID for a table with an integer primary key
+    /// </summary>
+    /// <param name="tableName">Table name</param>
+    /// <param name="idColumnName">ID column name</param>
+    /// <returns>Next available ID</returns>
+    public static int GetNextAvailableId(string tableName, string idColumnName)
+    {
+        try
+        {
+            string sql = $"SELECT ISNULL(MAX({idColumnName}), 0) + 1 FROM {tableName}";
+            object result = RetrieveSingleValue(sql);
+            return Convert.ToInt32(result);
+        }
+        catch
+        {
+            return 1;
+        }
+    }
+
+    /// <summary>
+    /// Executes a SQL command within a transaction
+    /// </summary>
+    /// <param name="sqlCommands">Array of SQL commands to execute</param>
+    /// <returns>True if all commands succeeded, false otherwise</returns>
+    public static bool ExecuteTransaction(string[] sqlCommands)
+    {
+        if (!OpenConnection())
+            return false;
+
+        SqlTransaction transaction = null;
+        try
+        {
+            transaction = lo_Connection.BeginTransaction();
+
+            foreach (string sql in sqlCommands)
+            {
+                SqlCommand cmd = new SqlCommand(sql, lo_Connection, transaction);
+                cmd.CommandTimeout = CommandTimeOutSeconds;
+                cmd.ExecuteNonQuery();
+            }
+
+            transaction.Commit();
+            LastError = "";
+            return true;
+        }
+        catch (Exception ex)
+        {
+            LastError = ex.Message;
+            try
+            {
+                transaction?.Rollback();
+            }
+            catch { }
+            return false;
+        }
+        finally
+        {
+            lo_Connection.Close();
+        }
+    }
+
+    /// <summary>
+    /// Validates that required tables exist in the database
+    /// </summary>
+    /// <returns>True if all required tables exist</returns>
+    public static bool ValidateTableStructure()
+    {
+        try
+        {
+            string[] requiredTables = { "INSTRUCTOR", "STUDENT", "CLASS", "ENROLL" };
+
+            foreach (string tableName in requiredTables)
+            {
+                string sql = $"SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '{tableName}'";
+                object result = RetrieveSingleValue(sql);
+
+                if (Convert.ToInt32(result) == 0)
+                {
+                    LastError = $"Required table '{tableName}' not found in database.";
+                    return false;
+                }
+            }
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            LastError = $"Error validating table structure: {ex.Message}";
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Safely escapes single quotes in strings for SQL queries
+    /// </summary>
+    /// <param name="input">Input string</param>
+    /// <returns>Escaped string safe for SQL</returns>
+    public static string EscapeSqlString(string input)
+    {
+        if (string.IsNullOrEmpty(input))
+            return "";
+
+        return input.Replace("'", "''");
+    }
+
+    // Remaining methods from original class...
     public static Hashtable CreateHashTable2_ViaCmd(ref SqlCommand SqlCmd)
     {
         // creates a key-pair hashtable for a multi-row 2-column query
@@ -253,8 +523,9 @@ public class Walton_DB
             else
                 return lo_HT;
         }
-        catch
+        catch (Exception ex)
         {
+            LastError = ex.Message;
             return null;
         }
         finally
@@ -303,10 +574,12 @@ public class Walton_DB
             }
             lo_DatR.Close();
 
+            LastError = "";
             return lo_HT;
         }
-        catch
+        catch (Exception ex)
         {
+            LastError = ex.Message;
             return null;
         }
         finally
@@ -351,10 +624,12 @@ public class Walton_DB
             }
             lo_DatR.Close();
 
+            LastError = "";
             return lo_HT;
         }
-        catch
+        catch (Exception ex)
         {
+            LastError = ex.Message;
             return null;
         }
         finally
@@ -392,93 +667,17 @@ public class Walton_DB
             lo_DatR.Close();
 
             if (Return_ArrayList.Count > 0)
+            {
+                LastError = "";
                 return Return_ArrayList;
+            }
             else
                 return null;
         }
-        catch
+        catch (Exception ex)
         {
+            LastError = ex.Message;
             return null;
-        }
-        finally
-        {
-            lo_Connection.Close();
-        }
-    }
-
-    public static decimal RetrieveScalar(string StrSql)
-    {
-        System.Data.SqlClient.SqlCommand objCom = new System.Data.SqlClient.SqlCommand();
-        decimal ld_Result;
-
-        if (!OpenConnection())
-            return 0;
-
-        try
-        {
-            objCom.Connection = lo_Connection;
-            objCom.CommandTimeout = CommandTimeOutSeconds;
-            objCom.CommandText = StrSql;
-            ld_Result = (decimal)objCom.ExecuteScalar();
-
-            return ld_Result;
-        }
-        catch
-        {
-            return 0;
-        }
-        finally
-        {
-            lo_Connection.Close();
-        }
-    }
-
-    public static object RetrieveSingleValue(string Sql)
-    {
-        System.Data.SqlClient.SqlCommand objCom = new System.Data.SqlClient.SqlCommand();
-        object ld_Result;
-
-        if (!OpenConnection())
-            return 0;
-
-        try
-        {
-            objCom.Connection = lo_Connection;
-            objCom.CommandTimeout = CommandTimeOutSeconds;
-            objCom.CommandText = Sql;
-            ld_Result = objCom.ExecuteScalar();
-
-            return ld_Result;
-        }
-        catch
-        {
-            return 0;
-        }
-        finally
-        {
-            lo_Connection.Close();
-        }
-    }
-
-    public static object RetrieveSingleValue(ref SqlCommand objCom)
-    {
-        object ld_Result;
-
-        if (!OpenConnection())
-            return 0;
-
-        objCom.Connection = lo_Connection;
-        objCom.CommandTimeout = CommandTimeOutSeconds;
-
-        try
-        {
-            ld_Result = objCom.ExecuteScalar();
-
-            return ld_Result;
-        }
-        catch
-        {
-            return 0;
         }
         finally
         {
@@ -505,10 +704,12 @@ public class Walton_DB
             DataAdapter.Dispose();
             myDataRowsCommandBuilder.Dispose();
 
+            LastError = "";
             return true;
         }
-        catch
+        catch (Exception ex)
         {
+            LastError = ex.Message;
             return false;
         }
         finally
@@ -536,10 +737,12 @@ public class Walton_DB
             lo_Ada = null;
 
             ReturnTable = Return_DataTable;
+            LastError = "";
             return true;
         }
-        catch
+        catch (Exception ex)
         {
+            LastError = ex.Message;
             return false;
         }
         finally
@@ -548,4 +751,3 @@ public class Walton_DB
         }
     }
 }
-
