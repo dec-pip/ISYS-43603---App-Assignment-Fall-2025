@@ -23,7 +23,7 @@ public class Walton_DB
                 {
                     lo_Connection = new SqlConnection();
                     // Your database connection string
-                    lo_Connection.ConnectionString = "Data Source=essql1.walton.uark.edu;Initial Catalog=ISYS43603_Fall2025_dec011_db;user id=dec011;password=ISYSPass100447686;Persist Security Info=False;Connection Timeout=30;";
+                    lo_Connection.ConnectionString = "Data Source=essql1.walton.uark.edu;Initial Catalog=ISYS43603_Fall2025_dec011_db;user id=dec011;password=ISYSPass100447686!;Persist Security Info=False;Connection Timeout=30;";
                 }
 
                 if (lo_Connection.State == ConnectionState.Closed)
